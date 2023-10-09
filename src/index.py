@@ -1,21 +1,43 @@
 import json
 from langchain.llms import OpenAI
+from langchain.prompts import ChatPromptTemplate
+
+template = ChatPromptTemplate.from_messages([
+    ("system", 
+     """You are a helpful AI Chat bot. Your goal is to answer the question 
+     related to product with the product information as reference: {productPanelContent};
+     Here is the history conversation: {history};
+     """),
+    ("ai", ""),
+    ("human", "{user_input}"),
+])
 
 def handler(event, context):
     print('Received event:')
     print(event)
     llm = OpenAI()
 
-    # parse data in body
+    # Parse data in body
     if 'body' in event:
-        user_input = event['body']
-    else:
-        user_input = ''
+        try:
+            parsed_body = json.loads(event['body'])
+            user_input = parsed_body.get('userInput', '')
+            history = parsed_body.get('history', '')
+            productPanelContent = parsed_body.get('productPanelContent', '')
+        except json.JSONDecodeError:
+            print('Error parsing JSON body')
 
-    if user_input is not None:
-        response_text = llm.predict(user_input)
+    if user_input:
+        message = template.format_messages(
+            user_input=user_input,
+            history=history,
+            productPanelContent=productPanelContent
+        )
+        print(message)
+        response_text = llm.predict_messages(message).content
     else:
         response_text = "No input provided"
+
     formatted_text = response_text.replace('\n', '<br>')
 
     response = {
