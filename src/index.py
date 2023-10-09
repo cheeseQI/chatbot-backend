@@ -20,7 +20,24 @@ def handler(event, context):
     llm = OpenAI()
 
     # Parse data in body
+    # Parse data in body
     if 'body' in event:
+        try:
+            parsed_body = json.loads(event['body'])
+            user_input = parsed_body.get('userInput', '')
+            history = parsed_body.get('history', '')
+            productPanelContent = parsed_body.get('productPanelContent', '')
+        except json.JSONDecodeError:
+            print('Error parsing JSON body')
+
+    if user_input:
+        message = template.format_messages(
+            user_input=user_input,
+            history=history,
+            productPanelContent=productPanelContent
+        )
+        print(message)
+        response_text = llm.predict_messages(message).content
         try:
             parsed_body = json.loads(event['body'])
             user_input = parsed_body.get('userInput', '')
