@@ -2,6 +2,8 @@ import json
 from langchain.llms import OpenAI
 from langchain.prompts import ChatPromptTemplate
 
+
+# Define a chat prompt template for use with the language model
 template = ChatPromptTemplate.from_messages([
     ("system", 
      """You are a helpful AI Chat bot. Your goal is to answer the question 
@@ -37,7 +39,8 @@ def handler(event, context):
         response_text = llm.predict_messages(message).content
     else:
         response_text = "No input provided"
-
+    
+    # Format the raw text here
     formatted_text = response_text.replace('\n', '<br>')
 
     response = {
